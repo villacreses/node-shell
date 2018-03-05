@@ -23,9 +23,12 @@ module.exports = {
     process.stdout.write(input);
   },
 
-  'cat': function(input) {
+  'cat': function(input, callback=null) {
     fs.readFile(input, 'utf8', (err, data) => {
       if(err) throw err;
+
+      if(callback)
+        data = callback(data);
 
       process.stdout.write(data);
       process.stdout.write("\nprompt > ");
@@ -33,23 +36,19 @@ module.exports = {
   },
 
   'head': function (input, limit=10) {
-    fs.readFile(input, 'utf8', (err, data) => {
-      if(err) throw err;
+    let callback = function (data) {
+      return data.split("\n", limit).slice(0,limit).join("\n");
+    }
 
-      data = data.split("\n", limit).slice(0,limit).join("\n");
-      process.stdout.write(data);
-      process.stdout.write("\nprompt > ");
-    });
+    this.cat(input, callback);
   },
 
   'tail': function (input, limit=10) {
-    fs.readFile(input, 'utf8', (err, data) => {
-      if(err) throw err;
-
+    let callback = function (data) {
       data = data.split("\n");
-      data = data.slice(data.length - limit - 1).join("\n");
-      process.stdout.write(data);
-      process.stdout.write("\nprompt > ");
-    });
+      return data.slice(data.length - limit - 1).join("\n");
+    }
+
+    this.cat(input, callback);
   }
 }
